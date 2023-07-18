@@ -3,6 +3,8 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
+apply plugin: 'maven-publish'
+
 android {
     namespace 'com.amaze.trashbin'
     compileSdk 33
@@ -39,4 +41,33 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                pom {
+                    groupId = 'com.amaze.trashbin'
+                    artifactId = 'amaze-trash-bin'
+                    licenses {
+                        license {
+                            name = 'Apache License'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'vishalnehra'
+                            name = 'Vishal Nehra'
+                            email = 'vishalmeham2@gmail.com'
+                        }
+                    }
+                    description = 'Library to manage your deleted files in a trash bin'
+                    version = '1.0.0'
+                }
+            }
+        }
+    }
 }

@@ -3,4 +3,25 @@ plugins {
     id 'com.android.application' version '7.3.1' apply false
     id 'com.android.library' version '7.3.1' apply false
     id 'org.jetbrains.kotlin.android' version '1.7.20' apply false
+    id "com.diffplug.spotless" version "5.14.2"
+}
+
+spotless {
+    java {
+        licenseHeaderFile 'spotless.license-java'
+        target 'trashbin/src/**/*.java'
+        googleJavaFormat('1.13.0')
+        removeUnusedImports() // removes any unused imports
+        importOrder 'java', 'javax', 'org', 'com', 'android', 'androidx', ''
+    }
+    kotlin {
+        licenseHeaderFile 'spotless.license-java'
+        target 'trashbin/src/**/*.kt'
+        ktlint("0.43.2").userData(['disabled_rules': 'no-wildcard-imports',
+                                   'kotlin_imports_layout': 'idea', 'indent_size': '4',
+                                   'max_line_length': '100'])
+        trimTrailingWhitespace()
+        indentWithSpaces()
+        endWithNewline()
+    }
 }

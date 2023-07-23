@@ -43,7 +43,11 @@ data class TrashBinConfig(
     }
 
     fun getTrashBinFilesDirectory(): String {
-        val directory = File(basePath + File.separator + TRASH_BIN_DIR)
+        val baseDir = File(basePath)
+        if (!baseDir.exists()) {
+            baseDir.mkdirs()
+        }
+        val directory = File(basePath, TRASH_BIN_DIR)
         if (!directory.exists()) {
             directory.mkdirs()
         }
@@ -51,7 +55,7 @@ data class TrashBinConfig(
     }
 
     fun getMetaDataFilePath(): String {
-        val file = File(basePath + File.separator + TRASH_BIN_META_FILE)
+        val file = File(basePath, TRASH_BIN_META_FILE)
         if (!file.exists()) {
             file.createNewFile()
         }

@@ -35,7 +35,7 @@ typealias ListTrashBinFilesCallback = suspend (parentTrashBinPath: String) -> Li
  * @param deletePermanentlyCallback - callback to invoke for cleanup automatically when any bin action is performed.
  * Pass null if you want to invoke cleanup manually through triggerCleanup. This will be executed in the same thread where your bin functions are executed.
  */
-class TrashBin private constructor(
+class TrashBin constructor(
     var trashConfig: TrashBinConfig,
     var deletePermanentlyCallback: DeletePermanentlyCallback?,
     var listTrashBinFilesCallback:
@@ -43,10 +43,6 @@ class TrashBin private constructor(
 ) {
 
     private var metadata: TrashBinMetadata? = null
-
-    companion object :
-        SingletonSingleArgHolder<TrashBin, TrashBinConfig, DeletePermanentlyCallback,
-            ListTrashBinFilesCallback>(::TrashBin)
 
     init {
         trashConfig.getTrashBinFilesDirectory()

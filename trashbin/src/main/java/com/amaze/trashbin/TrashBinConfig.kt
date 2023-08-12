@@ -55,6 +55,10 @@ data class TrashBinConfig(
     }
 
     fun getMetaDataFilePath(): String {
+        val baseDir = File(basePath)
+        if (!baseDir.exists()) {
+            baseDir.mkdirs()
+        }
         val file = File(basePath, TRASH_BIN_META_FILE)
         if (!file.exists()) {
             file.createNewFile()

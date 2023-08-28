@@ -90,9 +90,9 @@ class TrashBin constructor(
         filesMetadata.forEach {
             totalSize += it.sizeBytes
         }
-        filesMetadata.sortedBy {
+        filesMetadata.sortedByDescending {
             trashBinFile ->
-            trashBinFile.deleteTime?.times(-1)
+            trashBinFile.deleteTime
         }
         writeMetadataAndTriggerCleanup(filesMetadata, totalSize, doTriggerCleanup)
         return true
@@ -157,9 +157,9 @@ class TrashBin constructor(
         filesMetadata.forEach {
             totalSize += it.sizeBytes
         }
-        filesMetadata.sortedBy {
+        filesMetadata.sortedByDescending {
             trashBinFile ->
-            trashBinFile.deleteTime?.times(-1)
+            trashBinFile.deleteTime
         }
         writeMetadataAndTriggerCleanup(filesMetadata, totalSize, doTriggerCleanup)
         return true

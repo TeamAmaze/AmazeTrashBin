@@ -52,7 +52,7 @@ data class TrashBinMetadata(
     fun getFilesWithDeletionCriteria(): List<TrashBinFile> {
         var totalBytes = totalSize
         var numOfFiles = files.size
-        return files.sortedByDescending { it.deleteTime }.filter {
+        return files.sortedBy { it.deleteTime }.filter {
             file ->
             if (config.retentionNumOfFiles != TrashBinConfig.RETENTION_NUM_OF_FILES &&
                 numOfFiles > config.retentionNumOfFiles

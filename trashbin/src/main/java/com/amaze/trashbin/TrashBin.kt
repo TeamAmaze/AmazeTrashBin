@@ -29,7 +29,7 @@ typealias MoveFilesCallback = suspend (source: String, dest: String) -> Boolean
 typealias ListTrashBinFilesCallback = suspend (parentTrashBinPath: String) -> List<TrashBinFile>
 
 /**
- * Singleton class responsible to invoke trash bin functions. All the functions are NOT thread safe.
+ * Class responsible to invoke trash bin functions. All the functions are NOT thread safe.
  * You're advised to call them in background threads.
  * @param trashConfig - configuration for trashbin
  * @param deletePermanentlyCallback - callback to invoke for cleanup automatically when any bin action is performed.

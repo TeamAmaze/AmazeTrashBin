@@ -118,7 +118,7 @@ class TrashBin constructor(
                 Log.w(javaClass.simpleName, "Failed to move to bin " + it.path)
             }
         }
-        filesMetadata.sortBy {
+        filesMetadata.sortedByDescending {
             trashBinFile ->
             trashBinFile.deleteTime
         }

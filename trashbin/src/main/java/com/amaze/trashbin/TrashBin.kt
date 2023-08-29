@@ -24,21 +24,21 @@ import com.google.gson.stream.JsonReader
 import java.io.FileReader
 import java.io.FileWriter
 
-typealias DeletePermanentlyCallback = suspend (deletePath: String) -> Boolean
-typealias MoveFilesCallback = suspend (source: String, dest: String) -> Boolean
-typealias ListTrashBinFilesCallback = suspend (parentTrashBinPath: String) -> List<TrashBinFile>
+typealias DeletePermanentlyCallback = (deletePath: String) -> Boolean
+typealias MoveFilesCallback = (source: String, dest: String) -> Boolean
+typealias ListTrashBinFilesCallback = (parentTrashBinPath: String) -> List<TrashBinFile>
 
 /**
  * Class responsible to invoke trash bin functions. All the functions are NOT thread safe.
  * You're advised to call them in background threads.
  * @param trashConfig - configuration for trashbin
- * @param deletePermanentlyCallback - callback to invoke for cleanup automatically when any bin action is performed.
+ * @param deletePermanentlySuperCallback - callback to invoke for cleanup automatically when any bin action is performed.
  * Pass null if you want to invoke cleanup manually through triggerCleanup. This will be executed in the same thread where your bin functions are executed.
  */
 class TrashBin constructor(
     var trashConfig: TrashBinConfig,
-    var deletePermanentlyCallback: DeletePermanentlyCallback?,
-    var listTrashBinFilesCallback:
+    var deletePermanentlySuperCallback: DeletePermanentlyCallback?,
+    var listTrashBinFilesSuperCallback:
         ListTrashBinFilesCallback? = null
 ) {
 
@@ -49,7 +49,7 @@ class TrashBin constructor(
         metadata = getTrashBinMetadata()
     }
 
-    suspend fun deletePermanently(
+    fun deletePermanently(
         files: List<TrashBinFile>,
         deletePermanentlyCallback: DeletePermanentlyCallback,
         doTriggerCleanup: Boolean = true
@@ -98,7 +98,7 @@ class TrashBin constructor(
         return true
     }
 
-    suspend fun moveToBin(
+    fun moveToBin(
         files: List<TrashBinFile>,
         doTriggerCleanup: Boolean = true,
         moveFilesCallback: MoveFilesCallback
@@ -126,7 +126,7 @@ class TrashBin constructor(
         return true
     }
 
-    suspend fun restore(
+    fun restore(
         files: List<TrashBinFile>,
         doTriggerCleanup: Boolean = true,
         moveFilesCallback: MoveFilesCallback
@@ -165,14 +165,14 @@ class TrashBin constructor(
         return true
     }
 
-    suspend fun emptyBin(deletePermanentlyCallback: DeletePermanentlyCallback): Boolean {
+    fun emptyBin(deletePermanentlyCallback: DeletePermanentlyCallback): Boolean {
         return deletePermanently(
             metadata?.files ?: emptyList(),
             deletePermanentlyCallback, true
         )
     }
 
-    suspend fun restoreBin(moveFilesCallback: MoveFilesCallback): Boolean {
+    fun restoreBin(moveFilesCallback: MoveFilesCallback): Boolean {
         return restore(metadata?.files ?: emptyList(), true, moveFilesCallback)
     }
 
@@ -222,7 +222,7 @@ class TrashBin constructor(
      * Do note this operation is not thread safe, you're supposed to execute this on your own accord
      * if you call this manually
      */
-    suspend fun triggerCleanup(deletePermanentlyCallback: DeletePermanentlyCallback): Boolean {
+    fun triggerCleanup(deletePermanentlyCallback: DeletePermanentlyCallback): Boolean {
         val filesToDelete = metadata?.getFilesWithDeletionCriteria()
         if (!filesToDelete.isNullOrEmpty()) {
             deletePermanently(filesToDelete, deletePermanentlyCallback, false)
@@ -234,7 +234,7 @@ class TrashBin constructor(
      * impacts performance, removes physical file if not present in metadata,
      * or removes from metadata if physical file not present
      */
-    suspend fun removeRogueFiles(
+    fun removeRogueFiles(
         files: List<TrashBinFile>,
         listTrashBinFilesCallback: ListTrashBinFilesCallback,
         deletePermanentlyCallback:
@@ -278,7 +278,7 @@ class TrashBin constructor(
         return true
     }
 
-    private suspend fun writeMetadataAndTriggerCleanup(
+    fun writeMetadataAndTriggerCleanup(
         files: List<TrashBinFile>,
         totalSize: Long,
         doTriggerCleanup: Boolean = true
@@ -286,23 +286,26 @@ class TrashBin constructor(
         metadata?.config = trashConfig
         metadata?.files = files
         metadata?.totalSize = totalSize
-        if (trashConfig.deleteRogueFiles && listTrashBinFilesCallback != null &&
-            deletePermanentlyCallback != null
+        if (trashConfig.deleteRogueFiles && listTrashBinFilesSuperCallback != null &&
+            deletePermanentlySuperCallback != null
         ) {
             // trigger rogue file deletion
-            removeRogueFiles(files, listTrashBinFilesCallback!!, deletePermanentlyCallback!!)
+            removeRogueFiles(
+                files, listTrashBinFilesSuperCallback!!,
+                deletePermanentlySuperCallback!!
+            )
         } else {
             writeMetaDataJSONFile(metadata!!)
         }
         // trigger the Cleanup
-        if (doTriggerCleanup && deletePermanentlyCallback != null) {
-            triggerCleanup(deletePermanentlyCallback!!)
+        if (doTriggerCleanup && deletePermanentlySuperCallback != null) {
+            triggerCleanup(deletePermanentlySuperCallback!!)
         }
     }
 
     private fun writeMetaDataJSONFile(meta: TrashBinMetadata) {
         FileWriter(trashConfig.getMetaDataFilePath()).use { writer ->
-            val gson = GsonBuilder().create()
+            val gson = GsonBuilder().serializeNulls().create()
             gson.toJson(meta, writer)
         }
     }

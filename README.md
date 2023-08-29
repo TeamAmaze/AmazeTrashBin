@@ -9,6 +9,12 @@ Usage
 implementation 'com.github.TeamAmaze:AmazeTrashBin:x.y.z'
 `
 
+Proguard
+---
+`
+-keep class com.amaze.trashbin.** { *; }
+`
+
 Overview
 ---
 Helper methods to 
@@ -25,6 +31,11 @@ Make sure the directory is not in app's cache as it might get removed as user re
 
 Documentation
 ---
+**TrashBin Constructor**
+- Trashbin config - mandatory (see below)
+- deletePermanentlyCallback (optional) - way to delete files, required by cleanup and retention job
+- listTrashBinFilesCallback (optional) - way to list files in a directory, required by rogue job to list files in trashbin and delete any rogue data
+
 **trash bin config.**
 Deleted files will be at baseDir/TrashBinFiles/  
 Suggested to keep baseDir as a directory starting with a dot (.) so that it's hidden
@@ -53,7 +64,7 @@ Note: allowing to rename files in recycle bin is discouraged. It'll break the fi
 (volunteer to be deleted in next cleanup cycle)
 
 Library initializes by creating an object of TrashBin providing it a trashBinConfig object
-As soon as it's initalized it creates the necessary directories / config files
+As soon as it's initialized it creates the necessary directories / config files
 
 
 ### License:

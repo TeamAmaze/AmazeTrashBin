@@ -29,6 +29,7 @@ data class TrashBinConfig(
     val retentionDays: Int,
     val retentionBytes: Long,
     val retentionNumOfFiles: Int,
+    val cleanupHours: Int = -1,
     val deleteRogueFiles: Boolean,
     val triggerCleanupAutomatically: Boolean
 ) {
@@ -37,6 +38,7 @@ data class TrashBinConfig(
         const val RETENTION_DAYS_INFINITE = -1
         const val RETENTION_BYTES_INFINITE = -1L
         const val RETENTION_NUM_OF_FILES = -1
+        const val INTERVAL_CLEANUP_HOURS = 1
         const val TRASH_BIN_CAPACITY_INVALID = -1
         const val TRASH_BIN_DIR = "TrashBinFiles"
         const val TRASH_BIN_META_FILE = "metadata.json"
@@ -64,5 +66,9 @@ data class TrashBinConfig(
             file.createNewFile()
         }
         return basePath + File.separator + TRASH_BIN_META_FILE
+    }
+
+    fun getCleanupIntervalHours(): Int {
+        return cleanupHours
     }
 }

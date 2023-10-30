@@ -30,7 +30,9 @@ data class TrashBinConfig(
     val retentionBytes: Long,
     val retentionNumOfFiles: Int,
     val deleteRogueFiles: Boolean,
-    val triggerCleanupAutomatically: Boolean
+    val triggerCleanupAutomatically: Boolean,
+    private val cleanupDays: Int,
+    private val cleanupHours: Int
 ) {
 
     companion object {
@@ -64,5 +66,9 @@ data class TrashBinConfig(
             file.createNewFile()
         }
         return basePath + File.separator + TRASH_BIN_META_FILE
+    }
+
+    fun getCleanupIntervalHours(): Int {
+        return cleanupDays * 24 + cleanupHours;
     }
 }

@@ -16,11 +16,14 @@
  */
 package com.amaze.trashbin
 
+import android.content.Context
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.FileReader
 import java.io.FileWriter
 
@@ -39,7 +42,8 @@ class TrashBin constructor(
     var trashConfig: TrashBinConfig,
     var deletePermanentlySuperCallback: DeletePermanentlyCallback?,
     var listTrashBinFilesSuperCallback:
-        ListTrashBinFilesCallback? = null
+        ListTrashBinFilesCallback? = null,
+    context: Context
 ) {
 
     private var metadata: TrashBinMetadata? = null
@@ -47,6 +51,30 @@ class TrashBin constructor(
     init {
         trashConfig.getTrashBinFilesDirectory()
         metadata = getTrashBinMetadata()
+
+        val sharedPreferences = context.getSharedPreferences(
+            "${context.packageName}.com.amaze.trashbin",
+            Context.MODE_PRIVATE
+        )
+
+        val lastCleanup = sharedPreferences.getLong("com.amaze.trashbin.lastCleanup", -1)
+
+        val currentTime = System.currentTimeMillis()
+
+        val hours = ((lastCleanup - currentTime) / (1000 * 60 * 60))
+
+        if (hours >= trashConfig.getCleanupIntervalHours()) {
+
+            GlobalScope.launch {
+                triggerCleanup {
+
+                    sharedPreferences.edit().putLong("com.amaze.trashbin.lastCleanup", currentTime).apply()
+
+                    false
+                }
+            }
+        }
+
     }
 
     fun deletePermanently(

@@ -41,7 +41,7 @@ typealias ListTrashBinFilesCallback = (parentTrashBinPath: String) -> List<Trash
  */
 class TrashBin constructor(
     context: Context,
-    doTriggerCleanup: Boolean,
+    doTriggerAutoCleanup: Boolean,
     var trashConfig: TrashBinConfig,
     var deletePermanentlySuperCallback: DeletePermanentlyCallback?,
     var listTrashBinFilesSuperCallback:
@@ -53,27 +53,33 @@ class TrashBin constructor(
     init {
         trashConfig.getTrashBinFilesDirectory()
         metadata = getTrashBinMetadata()
-        val sharedPreferences = context.getSharedPreferences(
-            "${context.packageName}.com.amaze.trashbin",
-            Context.MODE_PRIVATE
-        )
-        val lastCleanup = sharedPreferences.getLong(
-            "com.amaze.trashbin.lastCleanup",
-            -1
-        )
-        val currentTime = System.currentTimeMillis()
-        val hours = ((lastCleanup - currentTime) / (1000 * 60 * 60))
-        if (trashConfig.getCleanupIntervalHours() != -1 &&
-            hours >= trashConfig.getCleanupIntervalHours() &&
-            doTriggerCleanup && deletePermanentlySuperCallback != null
+        if (deletePermanentlySuperCallback != null && doTriggerAutoCleanup &&
+            trashConfig.getCleanupIntervalHours() != -1
         ) {
-            GlobalScope.launch(Dispatchers.IO) {
-                triggerCleanup {
+            // check for auto trigger criteria
+            val sharedPreferences = context.getSharedPreferences(
+                "${context.packageName}.com.amaze.trashbin",
+                Context.MODE_PRIVATE
+            )
+            val lastCleanup = sharedPreferences.getLong(
+                "com.amaze.trashbin.lastCleanup",
+                0
+            )
+            val currentTime = System.currentTimeMillis()
+            val hours = ((currentTime - lastCleanup) / (1000 * 60 * 60))
+            Log.i(
+                javaClass.simpleName,
+                "auto cleanup pending minutes " +
+                    "$hours and interval ${trashConfig.getCleanupIntervalHours()}"
+            )
+            if (hours >= trashConfig.getCleanupIntervalHours()) {
+                Log.i(javaClass.simpleName, "triggering auto cleanup for trash bin")
+                GlobalScope.launch(Dispatchers.IO) {
+                    triggerCleanup(deletePermanentlySuperCallback!!)
                     sharedPreferences.edit().putLong(
                         "com.amaze.trashbin.lastCleanup",
                         currentTime
                     ).apply()
-                    false
                 }
             }
         }

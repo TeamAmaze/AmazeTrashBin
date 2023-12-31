@@ -35,9 +35,15 @@ data class TrashBinMetadata(
         var capacityNumOfFiles = 0
         var capacityBytes = 0
         if (config.retentionNumOfFiles != TrashBinConfig.RETENTION_NUM_OF_FILES) {
+            if (config.retentionNumOfFiles == 0) {
+                return 0
+            }
             capacityNumOfFiles = (numOfFiles / config.retentionNumOfFiles) * 100
         }
         if (config.retentionBytes != TrashBinConfig.RETENTION_BYTES_INFINITE) {
+            if (config.retentionBytes == 0L) {
+                return 0
+            }
             capacityBytes = ((totalBytes / config.retentionBytes) * 100).toInt()
         }
         return if (capacityBytes > capacityNumOfFiles) {
